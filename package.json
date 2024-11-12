@@ -1,0 +1,37 @@
+{
+  "name": "ck-helper",
+  "version": "1.0.0",
+  "description": "discord bot for ck gameschool projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damie824/ck-helper.git"
+  },
+  "keywords": [
+    "discord",
+    "discord.js",
+    "typescript"
+  ],
+  "author": "Damie Lab <admin@damie.works> (https://damie.works/profile/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/damie824/ck-helper/issues"
+  },
+  "homepage": "https://github.com/damie824/ck-helper#readme",
+  "dependencies": {
+    "@discordjs/rest": "^2.4.0",
+    "@types/node": "^22.9.0",
+    "discord-api-types": "^0.37.104",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.6.3"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.13",
+    "ts-node": "^10.9.2"
+  }
+}
