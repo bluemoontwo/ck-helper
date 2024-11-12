@@ -2,8 +2,8 @@ import { SlashCommandBuilder } from "discord.js";
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("핑")
-    .setDescription("Pong!이라고 응답합니다."),
+    .setName("ping")
+    .setDescription("현재 서버의 응답 속도를 확인합니다."),
   async execute(interaction: any) {
     const sent = await interaction.reply({
       content: "Pong!",

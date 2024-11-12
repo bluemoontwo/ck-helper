@@ -4,6 +4,9 @@ npm-debug.log
 yarn-error.log
 yarn-debug.log
 
+#스토어
+.store/
+
 # 환경 변수 파일
 .env
 

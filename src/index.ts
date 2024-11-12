@@ -9,11 +9,16 @@ import {
 } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
+import StoreManager from "./util/manange-store";
 
 require("dotenv").config();
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildMembers,
+  ],
 });
 
 const token = process.env.DISCORD_TOKEN || "";
@@ -31,7 +36,7 @@ client.once("ready", async () => {
   client.user?.setActivity("이 봇은 청강대 공식 봇이 아닙니다.", {
     type: ActivityType.Custom,
   });
-  client.user?.setStatus("invisible");
+  client.user?.setStatus("idle");
 
   const commandFiles = readdirSync(join(__dirname, "commands")).filter(
     (file) => file.endsWith(".js") || file.endsWith(".ts")
@@ -43,6 +48,10 @@ client.once("ready", async () => {
     commands.set(command.data.name, command);
     return command.data.toJSON();
   });
+
+  new StoreManager("global");
+
+  console.log("Successfully set global store.");
 
   try {
     console.log("Started refreshing application (/) commands.");
@@ -65,40 +74,42 @@ const eventFiles = readdirSync(join(__dirname, "events")).filter(
 );
 
 for (const file of eventFiles) {
+  console.log(`registering event ${file}`);
   const event = require(`./events/${file}`);
-  if (event.once) {
-    client.once(event.name, async (...args) => {
-      try {
-        await event.execute(...args);
-      } catch (error) {
-        console.error(`Error executing event ${event.name}:`, error);
-      }
-    });
-  } else {
-    client.on(event.name, async (...args) => {
-      try {
-        await event.execute(...args);
-      } catch (error) {
-        console.error(`Error executing event ${event.name}:`, error);
-      }
-    });
+  if (!event) {
+    console.error(`Failed to load event from file: ${file}`);
+    continue;
   }
+  event.register(client);
 }
 
 client.on("interactionCreate", async (interaction: Interaction) => {
-  if (!interaction.isCommand()) return;
+  if (interaction.isCommand()) {
+    const command = commands.get(interaction.commandName);
+    if (!command) return;
 
-  const command = commands.get(interaction.commandName);
-  if (!command) return;
+    try {
+      await (command as any).execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content: "There was an error executing this command!",
+        ephemeral: true,
+      });
+    }
+  }
 
-  try {
-    await (command as any).execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({
-      content: "There was an error executing this command!",
-      ephemeral: true,
-    });
+  if (interaction.isButton()) {
+    const buttonEventFiles = readdirSync(
+      join(__dirname, "events/button")
+    ).filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+
+    for (const file of buttonEventFiles) {
+      const event = require(`./events/button/${file}`);
+      if (event.check(interaction)) {
+        await event.execute(interaction);
+      }
+    }
   }
 });
 
