@@ -18,6 +18,9 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageTyping,
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -38,13 +41,28 @@ client.once("ready", async () => {
   });
   client.user?.setStatus("idle");
 
-  const commandFiles = readdirSync(join(__dirname, "commands")).filter(
-    (file) => file.endsWith(".js") || file.endsWith(".ts")
-  );
+  const getAllCommands = (dir: string): string[] => {
+    let files: string[] = [];
+    const items = readdirSync(join(__dirname, dir), { withFileTypes: true });
+
+    for (const item of items) {
+      if (item.isDirectory()) {
+        files = [...files, ...getAllCommands(`${dir}/${item.name}`)];
+      } else if (
+        item.isFile() &&
+        (item.name.endsWith(".js") || item.name.endsWith(".ts"))
+      ) {
+        files.push(`${dir}/${item.name}`);
+      }
+    }
+    return files;
+  };
+
+  const commandFiles = getAllCommands("commands");
 
   // 커맨드들을 Collection에 저장 및 JSON 변환
   const commandsArray = commandFiles.map((file) => {
-    const command = require(`./commands/${file}`);
+    const command = require(`./${file}`);
     commands.set(command.data.name, command);
     return command.data.toJSON();
   });
@@ -106,7 +124,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 
     for (const file of buttonEventFiles) {
       const event = require(`./events/button/${file}`);
-      if (event.check(interaction)) {
+      if (typeof event.check === "function" && event.check(interaction)) {
         await event.execute(interaction);
       }
     }

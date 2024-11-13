@@ -82,4 +82,13 @@ export default class StoreManager {
       console.error(`Error writing to store: ${error}`);
     }
   }
+
+  /**
+   * 저장소에서 값을 삭제하는 메서드
+   * @param key 점(.)으로 구분된 키 경로
+   */
+  public delete(key: string): void {
+    const store = new StoreManager(this.storeName);
+    store.set(key, undefined);
+  }
 }

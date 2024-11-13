@@ -11,6 +11,8 @@ module.exports = {
 
       const welcomeMessage = welcomeStore.get(member.guild.id) as WelcomeData;
 
+      if (!welcomeMessage) return;
+
       if (!systemChannel) {
         console.error("Could not find system channel.");
         return;
