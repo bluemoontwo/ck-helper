@@ -10,6 +10,7 @@ import {
 import { readdirSync } from "fs";
 import { join } from "path";
 import StoreManager from "./util/manange-store";
+import { registReminder } from "./util/reminder";
 
 require("dotenv").config();
 
@@ -130,5 +131,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     }
   }
 });
+
+registReminder(client);
 
 client.login(token);

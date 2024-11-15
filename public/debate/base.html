@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,8 +42,8 @@
       }
     </style>
   </head>
-  <body class="bg-background text-foreground flex">
-    <div class="h-[100vh] w-16 bg-secondary">
+  <body class="bg-background text-foreground flex break-keep">
+    <div class="h-[100vh] w-16 bg-secondary hidden md:block">
       <div class="group relative">
         <div
           class="mx-auto my-3 flex items-center cursor-pointer justify-center bg-background group-hover:bg-primary w-12 h-12 group-hover:scale-110 rounded-[24px] group-hover:rounded-[12px] transition-all duration-300"
@@ -182,7 +182,7 @@
                   <h4 class="text-md font-bold">회의를 시작합니다.</h4>
                   <p class="text-sm text-white/80 mt-2">
                     회의 타이틀 : {title} <br />
-                    모든 회의 내용은 기록되며, 이후 html 형식으로 제공됩니다.
+                    모든 회의 내용은 기록됩니다.
                   </p>
                 </div>
               </div>

@@ -12,31 +12,16 @@ module.exports = {
     const option = params[2];
     const store = new StoreManager("votes");
     const vote = store.get(voteId) as VoteData;
-    if (!vote) return;
-    if (vote.closed) {
-      const embed = new EmbedBuilder()
-        .setColor("#eb2323")
-        .setTitle("이미 종료된 투표입니다.")
-        .setDescription(`투표의 결과는 다음과 같았습니다.`);
-      for (const option in vote.options) {
-        embed.addFields({
-          name: option,
-          value: `${vote.options[option].count}회 클릭됨.`,
-        });
-      }
+    if (!vote) {
       interaction.reply({
-        embeds: [embed],
+        content: "이미 종료된 투표입니다.",
         ephemeral: true,
       });
       return;
     }
     if (vote.votedUser.includes(interaction.user.id)) {
-      const embed = new EmbedBuilder()
-        .setColor("#eb2323")
-        .setTitle("중복 투표는 허용되지 않습니다.")
-        .setDescription(`이미 투표하셨습니다.`);
       interaction.reply({
-        embeds: [embed],
+        content: "중복 투표는 허용되지 않습니다.",
         ephemeral: true,
       });
       return;

@@ -152,6 +152,8 @@ module.exports = {
         });
       }
 
+      store.delete(voteId);
+
       await interaction.channel?.send({
         embeds: [embed],
       });

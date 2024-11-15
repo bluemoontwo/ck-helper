@@ -41,8 +41,6 @@ module.exports = {
       avatarURL: interaction.user.displayAvatarURL(),
     })) as Message;
 
-    await sent.react("👍");
-
     await webhook.delete();
 
     await interaction.editReply({
