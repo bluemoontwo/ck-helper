@@ -5,4 +5,4 @@ cd $REPOSITORY
 
 sudo pnpm install
 
-sudo pnpm start
+sudo pm2 start dist/index.js --name ckhelper
