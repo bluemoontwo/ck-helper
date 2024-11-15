@@ -11,7 +11,6 @@ npm install pnpm -g
 
 pnpm install
 
-# .store 디렉토리 생성 및 권한 설정
 mkdir -p /home/ubuntu/.store
 chown -R ubuntu:ubuntu /home/ubuntu/.store
 

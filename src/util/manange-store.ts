@@ -18,8 +18,14 @@ export default class StoreManager {
     this.storeName = storeName;
 
     // Set relative path based on execution directory
-    const baseDir = path.resolve(process.cwd());
-    const storeDir = path.join(baseDir, ".store");
+    const baseDir =
+      process.env.NODE_ENV === "production"
+        ? "/home/ubuntu/.store"
+        : path.resolve(process.cwd());
+    const storeDir =
+      process.env.NODE_ENV === "production"
+        ? baseDir
+        : path.join(baseDir, ".store");
     this.filePath = path.join(storeDir, `${this.storeName}.json`);
 
     try {

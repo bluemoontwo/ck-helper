@@ -44,7 +44,7 @@ jobs:
           pnpm build
 
       - name: zip file
-        run: zip -r ckhelper.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
+        run: zip -r ckhelper.zip ./dist ./scripts ./public ./appspec.yml ./.env ./package.json
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
