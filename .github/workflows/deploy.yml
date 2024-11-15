@@ -51,7 +51,7 @@ jobs:
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment
-          --application-name ck-helper
+          --application-name ckhelper-codedeploy
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name GROUP
-          --s3-location bucket=hous-build,bundleType=zip,key=deploy/hous.zip
+          --s3-location bucket=ckhelper-build,bundleType=zip,key=deploy/ckhelper.zip
