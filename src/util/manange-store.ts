@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 
 /**
  * JSON 파일을 사용하여 데이터를 저장하고 관리하는 클래스
@@ -15,11 +16,15 @@ export default class StoreManager {
    */
   constructor(storeName: string) {
     this.storeName = storeName;
-    this.filePath = `.store/${this.storeName}.json`;
+
+    // 실행 파일의 디렉토리를 기준으로 상대 경로 설정
+    const baseDir = path.resolve(process.cwd());
+    const storeDir = path.join(baseDir, ".store");
+    this.filePath = path.join(storeDir, `${this.storeName}.json`);
 
     // .store 디렉토리가 없으면 생성
-    if (!fs.existsSync(".store")) {
-      fs.mkdirSync(".store", { recursive: true });
+    if (!fs.existsSync(storeDir)) {
+      fs.mkdirSync(storeDir, { recursive: true });
     }
 
     // 파일이 없으면 빈 객체로 초기화
@@ -88,7 +93,32 @@ export default class StoreManager {
    * @param key 점(.)으로 구분된 키 경로
    */
   public delete(key: string): void {
-    const store = new StoreManager(this.storeName);
-    store.set(key, undefined);
+    try {
+      const data = fs.readFileSync(this.filePath, "utf8");
+      const parsedData = JSON.parse(data);
+
+      const paths = key.split(".");
+      let current = parsedData;
+
+      // 마지막 키 이전까지 탐색
+      for (let i = 0; i < paths.length - 1; i++) {
+        if (!(paths[i] in current)) {
+          return; // 경로가 존재하지 않으면 종료
+        }
+        current = current[paths[i]];
+      }
+
+      // 마지막 키 삭제
+      delete current[paths[paths.length - 1]];
+
+      // 파일에 저장
+      fs.writeFileSync(
+        this.filePath,
+        JSON.stringify(parsedData, null, 2),
+        "utf8"
+      );
+    } catch (error) {
+      console.error(`Error deleting from store: ${error}`);
+    }
   }
 }
