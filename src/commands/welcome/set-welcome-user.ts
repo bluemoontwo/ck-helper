@@ -42,10 +42,12 @@ module.exports = {
     const description = interaction.options.getString("description");
 
     // 환영 메시지 저장소 초기화
-    const store = new StoreManager("welcome");
+    const store = new StoreManager("global");
 
     // 현재 서버의 환영 메시지 데이터를 가져옴
-    const welcomeMessage = store.get(interaction.guildId || "") as WelcomeData;
+    const welcomeMessage = store.get(
+      interaction.guildId + ".welcome" || ""
+    ) as WelcomeData;
 
     // 환영 메시지가 설정되어 있지 않은 경우 에러 메시지 반환
     if (!welcomeMessage) {

@@ -32,7 +32,7 @@ jobs:
         run: |
           pwd
           touch .env
-          echo NODE_ENV=production >> .env
+          echo NODE_ENV="production" >> .env
           echo CLIENT_ID=${{ secrets.CLIENT_ID }} >> .env
           echo DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} >> .env
           cat .env
