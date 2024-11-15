@@ -15,4 +15,4 @@ mkdir -p /home/ubuntu/.store
 chown -R ubuntu:ubuntu /home/ubuntu/.store
 
 pm2 delete ckhelper || true
-pm2 start dist/index.js --name ckhelper
+pnpm start
