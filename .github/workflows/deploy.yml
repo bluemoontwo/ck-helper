@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.15.1]
+        node-version: [22.11.0]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -47,11 +47,11 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./hous.zip s3://hous-build/deploy/
+        run: aws s3 cp --region ap-northeast-2 ./ckhelper.zip s3://ckhelper-build/deploy/
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment
-          --application-name hous-codedeploy
+          --application-name ck-helper
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name GROUP
           --s3-location bucket=hous-build,bundleType=zip,key=deploy/hous.zip
