@@ -37,7 +37,11 @@ jobs:
           cat .env
 
       - name: build
-        run: pnpm build
+        run: |
+          pwd
+          npm install pnpm -g
+          pnpm install
+          pnpm build
 
       - name: zip file
         run: zip -r ckhelper.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
