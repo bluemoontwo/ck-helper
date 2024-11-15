@@ -11,4 +11,5 @@ npm install pnpm -g
 
 pnpm install
 
+pm2 delete ckhelper || true
 pm2 start dist/index.js --name ckhelper
