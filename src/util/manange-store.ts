@@ -2,48 +2,53 @@ import fs from "fs";
 import path from "path";
 
 /**
- * JSON 파일을 사용하여 데이터를 저장하고 관리하는 클래스
+ * Class for storing and managing data using JSON files
  */
 export default class StoreManager {
-  /** 저장소 이름 */
+  /** Store name */
   private storeName: string;
-  /** 저장 파일 경로 */
+  /** File path */
   private filePath: string;
 
   /**
-   * StoreManager 클래스의 생성자
-   * @param storeName 저장소 이름
+   * Constructor for StoreManager class
+   * @param storeName Store name
    */
   constructor(storeName: string) {
     this.storeName = storeName;
 
-    // 실행 파일의 디렉토리를 기준으로 상대 경로 설정
+    // Set relative path based on execution directory
     const baseDir = path.resolve(process.cwd());
     const storeDir = path.join(baseDir, ".store");
     this.filePath = path.join(storeDir, `${this.storeName}.json`);
 
-    // .store 디렉토리가 없으면 생성
-    if (!fs.existsSync(storeDir)) {
-      fs.mkdirSync(storeDir, { recursive: true });
-    }
+    try {
+      // Create .store directory if it doesn't exist
+      if (!fs.existsSync(storeDir)) {
+        fs.mkdirSync(storeDir, { recursive: true });
+      }
 
-    // 파일이 없으면 빈 객체로 초기화
-    if (!fs.existsSync(this.filePath)) {
-      fs.writeFileSync(this.filePath, "{}", "utf8");
+      // Initialize with empty object if file doesn't exist
+      if (!fs.existsSync(this.filePath)) {
+        fs.writeFileSync(this.filePath, "{}", "utf8");
+      }
+    } catch (error) {
+      console.error(`Error initializing store: ${error}`);
+      throw new Error("Failed to initialize store");
     }
   }
 
   /**
-   * 저장소에서 값을 가져오는 메서드
-   * @param key 점(.)으로 구분된 키 경로
-   * @returns 저장된 값 또는 undefined
+   * Method to retrieve value from store
+   * @param key Key path separated by dots
+   * @returns Stored value or undefined
    */
   public get<T>(key: string): T | undefined {
     try {
       const data = fs.readFileSync(this.filePath, "utf8");
       const parsedData = JSON.parse(data);
 
-      // 점으로 구분된 경로를 따라 값을 찾음
+      // Follow path separated by dots to find value
       return key.split(".").reduce((obj: any, path) => {
         return obj?.[path];
       }, parsedData);
@@ -54,9 +59,9 @@ export default class StoreManager {
   }
 
   /**
-   * 저장소에 값을 저장하는 메서드
-   * @param key 점(.)으로 구분된 키 경로
-   * @param value 저장할 값
+   * Method to store value in store
+   * @param key Key path separated by dots
+   * @param value Value to store
    */
   public set(key: string, value: unknown): void {
     try {
@@ -66,7 +71,7 @@ export default class StoreManager {
       const paths = key.split(".");
       let current = parsedData;
 
-      // 중첩된 객체 구조 생성
+      // Create nested object structure
       for (let i = 0; i < paths.length - 1; i++) {
         if (!(paths[i] in current)) {
           current[paths[i]] = {};
@@ -74,10 +79,10 @@ export default class StoreManager {
         current = current[paths[i]];
       }
 
-      // 최종 값 설정
+      // Set final value
       current[paths[paths.length - 1]] = value;
 
-      // 파일에 저장
+      // Save to file
       fs.writeFileSync(
         this.filePath,
         JSON.stringify(parsedData, null, 2),
@@ -85,12 +90,13 @@ export default class StoreManager {
       );
     } catch (error) {
       console.error(`Error writing to store: ${error}`);
+      throw new Error("Failed to save data");
     }
   }
 
   /**
-   * 저장소에서 값을 삭제하는 메서드
-   * @param key 점(.)으로 구분된 키 경로
+   * Method to delete value from store
+   * @param key Key path separated by dots
    */
   public delete(key: string): void {
     try {
@@ -100,18 +106,18 @@ export default class StoreManager {
       const paths = key.split(".");
       let current = parsedData;
 
-      // 마지막 키 이전까지 탐색
+      // Search until last key
       for (let i = 0; i < paths.length - 1; i++) {
         if (!(paths[i] in current)) {
-          return; // 경로가 존재하지 않으면 종료
+          return; // Exit if path doesn't exist
         }
         current = current[paths[i]];
       }
 
-      // 마지막 키 삭제
+      // Delete last key
       delete current[paths[paths.length - 1]];
 
-      // 파일에 저장
+      // Save to file
       fs.writeFileSync(
         this.filePath,
         JSON.stringify(parsedData, null, 2),
@@ -119,6 +125,7 @@ export default class StoreManager {
       );
     } catch (error) {
       console.error(`Error deleting from store: ${error}`);
+      throw new Error("Failed to delete data");
     }
   }
 }
