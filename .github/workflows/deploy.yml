@@ -36,8 +36,11 @@ jobs:
           echo DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} >> .env
           cat .env
 
+      - name: build
+        run: pnpm build
+
       - name: zip file
-        run: zip -r ckhelper.zip ./scripts ./appspec.yml ./.env ./package.json
+        run: zip -r ckhelper.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
