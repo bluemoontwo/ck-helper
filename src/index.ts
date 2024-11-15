@@ -34,7 +34,9 @@ const rest = new REST({ version: "10" }).setToken(token);
 const commands = new Collection();
 
 client.once("ready", async () => {
-  console.log("Bot is online and ready with slash commands!");
+  if (process.env.NODE_ENV === "production") {
+    console.log("Bot is currently running in production mode");
+  }
 
   // 현재 플래이 중인 게임을 설정
   client.user?.setActivity("이 봇은 청강대 공식 봇이 아닙니다.", {
