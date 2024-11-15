@@ -11,8 +11,6 @@ npm install pnpm -g
 
 pnpm install
 
-export NODE_ENV=production
-
 mkdir -p /home/ubuntu/.store
 chown -R ubuntu:ubuntu /home/ubuntu/.store
 
