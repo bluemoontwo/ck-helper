@@ -1,10 +1,11 @@
 export interface DebateData {
-  title: string;
+  topic: string;
   author: string;
-  triggerMessage: string;
   description: string;
-  channel: string;
-  threadId: string;
+  interactionChannelId: string;
+  triggerMessageId: string;
+  categoryId: string;
+  channelId: string;
   messages: MessageData[];
   closed: boolean;
 }

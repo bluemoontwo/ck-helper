@@ -1,16 +1,10 @@
-import {
-  Client,
-  GatewayIntentBits,
-  REST,
-  Routes,
-  Interaction,
-  Collection,
-  ActivityType,
-} from "discord.js";
-import { readdirSync } from "fs";
-import { join } from "path";
+import {ActivityType, Client, Collection, GatewayIntentBits, REST,} from "discord.js";
+import {readdirSync} from "fs";
+import {join} from "path";
 import StoreManager from "./util/manange-store";
-import { registReminder } from "./util/reminder";
+import {registReminder} from "./util/reminder";
+import {RESTPostAPIApplicationCommandsJSONBody, Routes} from "discord-api-types/v10";
+import {InteractionCallbackManager} from "./util/interaction-handler";
 
 require("dotenv").config();
 
@@ -28,10 +22,11 @@ const client = new Client({
 const token = process.env.DISCORD_TOKEN || "";
 const clientId = process.env.CLIENT_ID || "";
 
-const rest = new REST({ version: "10" }).setToken(token);
+const rest = new REST({version: "10"}).setToken(token);
 
-// 커맨드를 저장할 Collection 생성
-const commands = new Collection();
+// InteractionCallbackManager 를 저장할 Collection 생성
+const commands: Collection<string, InteractionCallbackManager> = new Collection();
+const components: InteractionCallbackManager[] = [];
 
 client.once("ready", async () => {
   if (process.env.NODE_ENV === "production") {
@@ -44,13 +39,13 @@ client.once("ready", async () => {
   });
   client.user?.setStatus("idle");
 
-  const getAllCommands = (dir: string): string[] => {
+  const getAllScriptFiles = (dir: string): string[] => {
     let files: string[] = [];
-    const items = readdirSync(join(__dirname, dir), { withFileTypes: true });
+    const items = readdirSync(join(__dirname, dir), {withFileTypes: true});
 
     for (const item of items) {
       if (item.isDirectory()) {
-        files = [...files, ...getAllCommands(`${dir}/${item.name}`)];
+        files = [...files, ...getAllScriptFiles(`${dir}/${item.name}`)];
       } else if (
         item.isFile() &&
         (item.name.endsWith(".js") || item.name.endsWith(".ts"))
@@ -61,32 +56,86 @@ client.once("ready", async () => {
     return files;
   };
 
-  const commandFiles = getAllCommands("commands");
+  // 커맨드 파일 가져오기
+  const commandFiles = getAllScriptFiles("commands");
 
-  // 커맨드들을 Collection에 저장 및 JSON 변환
-  const commandsArray = commandFiles.map((file) => {
-    const command = require(`./${file}`);
-    commands.set(command.data.name, command);
-    return command.data.toJSON();
-  });
+  let commandData: RESTPostAPIApplicationCommandsJSONBody[] = [];
+
+  for (const file of commandFiles) {
+    const obj = await import(`./${file}`);
+
+    const prototype = obj.default.prototype;
+    if (Reflect.hasMetadata("discord:interaction", prototype) && Reflect.hasMetadata("discord:command", prototype)) {
+      const data = Reflect.getMetadata("discord:command", prototype) as RESTPostAPIApplicationCommandsJSONBody;
+      const manager = Reflect.getMetadata("discord:interaction", prototype) as InteractionCallbackManager;
+
+      commandData.push(data);
+      commands.set(data.name, manager);
+    }
+  }
+
+  // 컴포넌트 파일 가져오기
+  const componentFiles = getAllScriptFiles("components");
+
+  for (const file of componentFiles) {
+    const obj = await import(`./${file}`);
+
+    const prototype = obj.default.prototype;
+    if (Reflect.hasMetadata("discord:interaction", prototype)) {
+      const manager = Reflect.getMetadata("discord:interaction", prototype) as InteractionCallbackManager;
+      components.push(manager);
+    }
+  }
 
   new StoreManager("global");
 
   console.log("Successfully set global store.");
 
-  try {
-    console.log("Started refreshing application (/) commands.");
+  if (commandData.length > 0) {
+    try {
+      console.log("Started refreshing application (/) commands.");
 
-    await rest.put(Routes.applicationCommands(clientId), {
-      body: commandsArray,
-    });
+      await rest.put(
+        Routes.applicationCommands(clientId),
+        {body: commandData},
+      );
 
-    console.log(
-      `Successfully reloaded application ${commandFiles.length} (/) commands.`
-    );
-  } catch (error) {
-    console.error(error);
+      console.log(`Successfully reloaded application ${commandFiles.length} (/) commands.`);
+    } catch (error) {
+      console.error(error);
+    }
   }
+
+  client.on("interactionCreate", (interaction) => {
+    if (interaction.isCommand()) {
+      let key = interaction.commandName;
+      const command = commands.get(key);
+
+      if (!command) {
+        return;
+      }
+
+      if (interaction.isChatInputCommand()) {
+        const groupName = interaction.options.getSubcommandGroup();
+        const subcommandName = interaction.options.getSubcommand(false);
+
+        key += groupName ? "/" + groupName : "";
+        key += subcommandName ? "/" + subcommandName : "";
+      }
+
+      command.call(key, interaction);
+    }
+
+    if (interaction.isMessageComponent()) {
+      for (const component of components) {
+        const customId = interaction.customId.split("_")[0];
+        if (component.contain(customId)) {
+          component.call(customId, interaction);
+          return;
+        }
+      }
+    }
+  });
 });
 
 // 이벤트 파일을 읽어와서 등록
@@ -103,36 +152,6 @@ for (const file of eventFiles) {
   }
   event.register(client);
 }
-
-client.on("interactionCreate", async (interaction: Interaction) => {
-  if (interaction.isCommand()) {
-    const command = commands.get(interaction.commandName);
-    if (!command) return;
-
-    try {
-      await (command as any).execute(interaction);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({
-        content: "There was an error executing this command!",
-        ephemeral: true,
-      });
-    }
-  }
-
-  if (interaction.isButton()) {
-    const buttonEventFiles = readdirSync(
-      join(__dirname, "events/button")
-    ).filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
-
-    for (const file of buttonEventFiles) {
-      const event = require(`./events/button/${file}`);
-      if (typeof event.check === "function" && event.check(interaction)) {
-        await event.execute(interaction);
-      }
-    }
-  }
-});
 
 registReminder(client);
 

@@ -1,12 +1,12 @@
 import { ButtonInteraction, EmbedBuilder } from "discord.js";
 import StoreManager from "../../util/manange-store";
 import { VoteData } from "../../types/vote";
+import {AddExecute, InteractionHandler} from "../../util/interaction-handler";
 
-module.exports = {
-  check: (interaction: ButtonInteraction) => {
-    return interaction.customId.startsWith("vote_");
-  },
-  execute: async (interaction: ButtonInteraction) => {
+@InteractionHandler()
+export default class VoteButton {
+  @AddExecute("vote")
+  async vote(interaction: ButtonInteraction) {
     const params = interaction.customId.split("_");
     const voteId = params[1];
     const option = params[2];
@@ -35,5 +35,5 @@ module.exports = {
       content: "투표가 완료되었습니다.",
       ephemeral: true,
     });
-  },
-};
+  }
+}

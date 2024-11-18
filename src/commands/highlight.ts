@@ -1,16 +1,23 @@
 import { EmbedBuilder, Message, SlashCommandBuilder } from "discord.js";
+import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-handler";
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("강조")
+@CommandData(
+  new SlashCommandBuilder()
+    .setName("highlight")
+    .setNameLocalization("ko", "강조")
     .setDescription("메시지를 강조해 표시합니다.")
     .addStringOption((option) =>
       option
         .setName("메시지")
         .setDescription("강조할 메시지를 입력합니다.")
         .setRequired(true)
-    ),
-  async execute(interaction: any) {
+    )
+    .toJSON()
+)
+@InteractionHandler()
+export default class HighlightCommand {
+  @AddExecute("highlight")
+  public async execute(interaction: any) {
     await interaction.reply({
       content: "메시지를 표시하고 있어요..",
       fetchReply: true,
@@ -46,5 +53,5 @@ module.exports = {
     await interaction.editReply({
       content: "메시지를 강조했어요!",
     });
-  },
-};
+  }
+}
