@@ -64,7 +64,7 @@ export function makeDebateHtml(debate: DebateData, interaction: any) {
   }, "");
   // HTML 템플릿에 제목과 메시지 내용 삽입
   const html = baseHtml
-    .replace(new RegExp("{title}", "g"), debate.title)
+    .replace(new RegExp("{title}", "g"), debate.topic)
     .replace("{messages}", userMessages);
 
   // HTML을 버퍼로 변환하여 첨부 파일 생성

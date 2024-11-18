@@ -1,9 +1,10 @@
 import { SlashCommandBuilder } from "discord.js";
-import StoreManager from "../../util/manange-store";
-import { Reminder, ReminderTime } from "../../types/reminder";
+import StoreManager from "../util/manange-store";
+import { Reminder, ReminderTime } from "../types/reminder";
+import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-handler";
 
-module.exports = {
-  data: new SlashCommandBuilder()
+@CommandData(
+  new SlashCommandBuilder()
     .setName("remind")
     .setDescription("요청한 시간에 맞춰 알림을 보냅니다.")
     .addStringOption((option) =>
@@ -43,7 +44,12 @@ module.exports = {
         .setName("mention-author")
         .setDescription("작성자 멘션을 하실 건가요?")
         .setRequired(false)
-    ),
+    )
+    .toJSON()
+)
+@InteractionHandler()
+export default class ReminderCommand {
+  @AddExecute("remind")
   async execute(interaction: any) {
     const time = interaction.options.getString("시간");
     if (!time) return;
@@ -102,5 +108,5 @@ module.exports = {
       }월 ${dateToRemind.getDate()}일 ${dateToRemind.getHours()}시 ${dateToRemind.getMinutes()}분으로 알람을 설정했습니다.`,
       ephemeral: true,
     });
-  },
-};
+  }
+}

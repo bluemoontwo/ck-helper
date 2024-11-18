@@ -1,24 +1,88 @@
-import { ButtonInteraction } from "discord.js";
+import {ButtonInteraction, ChannelType, PermissionsBitField,} from "discord.js";
 import StoreManager from "../../util/manange-store";
-import { DebateData } from "../../types/debate";
-import fs from "fs";
-import { makeDebateHtml } from "../../util/make-debateHtml";
+import {DebateData} from "../../types/debate";
+import {makeDebateHtml} from "../../util/make-debateHtml";
+import {AddExecute, InteractionHandler} from "../../util/interaction-handler";
 
-module.exports = {
-  // 버튼 상호작용이 debate-html_ 으로 시작하는지 확인하는 함수
-  check: (interaction: ButtonInteraction) => {
+@InteractionHandler()
+export default class DebateButton {
+
+  // 회의 종료 버튼
+  @AddExecute("debate-close")
+  async closeDebate(interaction: ButtonInteraction) {
     try {
-      return interaction.customId.startsWith("debate-html_");
+      const debateId = interaction.customId.split("_")[1];
+      const store = new StoreManager("debate");
+      const debate = store.get(debateId) as DebateData;
+      if (!debate) {
+        await interaction.reply({
+          content: "회의를 종료할 수 없습니다.",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      if (
+        !interaction.memberPermissions?.has(
+          PermissionsBitField.Flags.Administrator
+        ) &&
+        interaction.user.id !== debate.author
+      ) {
+        await interaction.reply({
+          content: "권한이 없습니다.",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      debate.closed = true;
+
+      const channel = interaction.guild?.channels.cache.get(debate.interactionChannelId);
+      if (channel?.type !== ChannelType.GuildText) {
+        await interaction.reply({
+          content: "회의를 종료할 수 없습니다.",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      try {
+        const attachment = makeDebateHtml(debate, interaction);
+
+        const startMessage = await channel.messages.fetch(
+          debate.triggerMessageId
+        );
+        if (startMessage) {
+          await startMessage.edit({
+            content: "회의를 종료하였습니다. 회의 기록은 아래를 참고해 주세요.",
+            files: [attachment],
+            embeds: [],
+            components: []
+          });
+        }
+
+        await interaction.reply({
+          content: "회의를 종료하였습니다.",
+        });
+
+        const voiceChan = interaction.guild?.channels.cache.get(debate.channelId);
+        if (voiceChan) {
+          await voiceChan.delete();
+          store.delete(debateId);
+        } else {
+          store.set(debateId, debate);
+        }
+      } catch (error) {
+        console.error("회의록 생성 중 오류:", error);
+      }
     } catch (error) {
-      interaction.reply({
-        content: "커스텀 ID를 확인하는 중 오류가 발생했습니다.",
-        ephemeral: true,
-      });
-      return false;
+      console.error("예기치 못한 오류:", error);
     }
-  },
-  // 버튼 클릭 시 실행되는 메인 함수
-  execute: async (interaction: ButtonInteraction) => {
+  }
+
+  // 회의록 가져오기 버튼
+  @AddExecute("debate-html")
+  async getHtml(interaction: ButtonInteraction) {
     try {
       // 디베이트 ID 추출 및 스토어에서 데이터 가져오기
       const debateId = interaction.customId.split("_")[1];
@@ -42,7 +106,7 @@ module.exports = {
         }
       }
 
-      // 초기 응답 전송
+// 초기 응답 전송
       try {
         await interaction.reply({
           content: "회의록 만드는 중..",
@@ -111,5 +175,5 @@ module.exports = {
         ephemeral: true,
       });
     }
-  },
-};
+  }
+}
