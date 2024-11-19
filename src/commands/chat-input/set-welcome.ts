@@ -1,24 +1,28 @@
 import {CacheType, ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder,} from "discord.js";
-import StoreManager from "../util/manange-store";
-import {WelcomeData} from "../types/welcome";
-import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-handler";
+import StoreManager from "../../util/manange-store";
+import {WelcomeData} from "../../types/welcome";
+import {AddExecute, CommandData, InteractionHandler} from "../../util/interaction-handler";
 
 @CommandData(
   new SlashCommandBuilder()
     .setName("welcome") // 커맨드 이름 설정
+    .setNameLocalization("ko", "환영메세지")
     .setDescription("환영 메시지를 설정합니다.") // 커맨드 설명
     .addSubcommandGroup((option) =>
       option
         .setName("set-format")
-        .setDescription("환영 메세지 포멧을 설정합니다.")
+        .setNameLocalization("ko", "형식")
+        .setDescription("환영 메세지 형식을 설정합니다.")
         .addSubcommand((option) =>
           option
             .setName("system")
+            .setNameLocalization("ko", "시스템")
             .setDescription("시스템 채널에 보낼 메세지 형식을 설정합니다.")
             .addStringOption(
               (option) =>
                 option
                   .setName("message")
+                  .setNameLocalization("ko", "메세지")
                   .setDescription("환영 메시지를 입력합니다.")
                   .setRequired(true) // 필수 입력 옵션
             )
@@ -26,11 +30,13 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
         .addSubcommand((option) =>
           option
             .setName("dm")
+            .setNameLocalization("ko", "유저")
             .setDescription("DM 채널에 보낼 메세지 형식을 설정합니다.")
             .addStringOption(
               (option) =>
                 option
                   .setName("title") // 제목 옵션 추가
+                  .setNameLocalization("ko", "제목")
                   .setDescription("환영 메시지의 제목을 입력합니다.")
                   .setRequired(true) // 필수 입력 항목으로 설정
             )
@@ -38,6 +44,7 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
               (option) =>
                 option
                   .setName("description") // 설명 옵션 추가
+                  .setNameLocalization("ko", "설명")
                   .setDescription("환영 메시지의 설명을 입력합니다.")
                   .setRequired(true) // 필수 입력 항목으로 설정
             )
@@ -46,7 +53,7 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
     .toJSON()
 )
 @InteractionHandler()
-export default class WelcomeCommand {
+export default class WelcomeChatInputCommand {
 
   // 시스템 채널에 보낼 메세지 형식 설정
   @AddExecute("welcome/set-format/system")

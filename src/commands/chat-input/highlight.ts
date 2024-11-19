@@ -1,5 +1,5 @@
 import { EmbedBuilder, Message, SlashCommandBuilder } from "discord.js";
-import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-handler";
+import {AddExecute, CommandData, InteractionHandler} from "../../util/interaction-handler";
 
 @CommandData(
   new SlashCommandBuilder()
@@ -8,14 +8,15 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
     .setDescription("메시지를 강조해 표시합니다.")
     .addStringOption((option) =>
       option
-        .setName("메시지")
+        .setName("message")
+        .setNameLocalization("ko", "메세지")
         .setDescription("강조할 메시지를 입력합니다.")
         .setRequired(true)
     )
     .toJSON()
 )
 @InteractionHandler()
-export default class HighlightCommand {
+export default class HighlightChatInputCommand {
   @AddExecute("highlight")
   public async execute(interaction: any) {
     await interaction.reply({
@@ -24,7 +25,7 @@ export default class HighlightCommand {
       ephemeral: true,
     });
 
-    const message = interaction.options.getString("메시지");
+    const message = interaction.options.getString("message");
     if (!message) {
       interaction.editReply({
         content: "메시지를 입력해주세요.",

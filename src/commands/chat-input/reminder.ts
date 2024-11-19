@@ -1,15 +1,17 @@
-import { SlashCommandBuilder } from "discord.js";
-import StoreManager from "../util/manange-store";
-import { Reminder, ReminderTime } from "../types/reminder";
-import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-handler";
+import {ChannelType, SlashCommandBuilder} from "discord.js";
+import StoreManager from "../../util/manange-store";
+import {Reminder} from "../../types/reminder";
+import {AddExecute, CommandData, InteractionHandler} from "../../util/interaction-handler";
 
 @CommandData(
   new SlashCommandBuilder()
     .setName("remind")
+    .setNameLocalization("ko", "알림")
     .setDescription("요청한 시간에 맞춰 알림을 보냅니다.")
     .addStringOption((option) =>
       option
-        .setName("시간")
+        .setName("time")
+        .setNameLocalization("ko", "시간")
         .setDescription(
           "알림을 받을 시간을 입력합니다. 년/월/일/시/분 형식으로 입력합니다. ex ) 2025/01/01/09/00"
         )
@@ -17,41 +19,52 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
     )
     .addStringOption((option) =>
       option
-        .setName("타이틀")
-        .setDescription("알림의 타이틀을 입력합니다.")
+        .setName("name")
+        .setNameLocalization("ko", "이름")
+        .setDescription("알림의 이름을 입력합니다.")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
-        .setName("설명")
+        .setName("description")
+        .setNameLocalization("ko", "설명")
         .setDescription("알림의 설명을 입력합니다.")
         .setRequired(true)
     )
     .addChannelOption((option) =>
       option
-        .setName("채널")
-        .setDescription("알림을 보낼 채널을 입력해 주세요!")
+        .setName("channel")
+        .setNameLocalization("ko", "채널")
+        .setDescription("알림을 보낼 채널을 입력해 주세요.")
+        .addChannelTypes(
+          ChannelType.GuildText,
+          ChannelType.GuildVoice,
+          ChannelType.PublicThread,
+          ChannelType.PrivateThread
+        )
         .setRequired(false)
     )
     .addBooleanOption((option) =>
       option
         .setName("mention-everyone")
+        .setNameLocalization("ko", "전체-멘션")
         .setDescription("에브리원 멘션을 하실 건가요?")
         .setRequired(false)
     )
     .addBooleanOption((option) =>
       option
         .setName("mention-author")
+        .setNameLocalization("ko", "작성자-멘션")
         .setDescription("작성자 멘션을 하실 건가요?")
         .setRequired(false)
     )
     .toJSON()
 )
 @InteractionHandler()
-export default class ReminderCommand {
+export default class ReminderChatInputCommand {
   @AddExecute("remind")
   async execute(interaction: any) {
-    const time = interaction.options.getString("시간");
+    const time = interaction.options.getString("time");
     if (!time) return;
 
     const reminderTime: number[] = time
@@ -81,8 +94,8 @@ export default class ReminderCommand {
     }
 
     const store = new StoreManager("reminder");
-    const title = interaction.options.getString("타이틀");
-    const description = interaction.options.getString("설명");
+    const name = interaction.options.getString("name");
+    const description = interaction.options.getString("description");
     const currentTime = dateToRemind.getTime().toString().slice(0, -4);
     let currentReminders = (store.get(currentTime) as Reminder[]) || [];
     const mention = {
@@ -92,11 +105,10 @@ export default class ReminderCommand {
     store.set(currentTime, [
       ...currentReminders,
       {
-        title: title,
+        name: name,
         description: description,
         authorId: interaction.user.id,
-        channelId:
-          interaction.options.getChannel("채널")?.id || interaction.channelId,
+        channelId: interaction.options.getChannel("channel")?.id || interaction.channelId,
         guildId: interaction.guildId,
         time: time,
         mention: mention,

@@ -1,26 +1,21 @@
-import {
-  CacheType,
-  CacheTypeReducer,
-  ChannelType,
-  ChatInputCommandInteraction,
-  Guild,
-  SlashCommandBuilder
-} from "discord.js";
-import {AddExecute, CommandData, InteractionCallbackManager, InteractionHandler} from "../util/interaction-handler";
+import {ChannelType, ChatInputCommandInteraction, Guild, SlashCommandBuilder} from "discord.js";
+import {AddExecute, CommandData, InteractionHandler} from "../../util/interaction-handler";
 
 @CommandData(
   new SlashCommandBuilder()
     .setName("guild")
-    .setDescription("길드와 관련된 조작을 할 수 있습니다.")
+    .setNameLocalization("ko", "서버")
+    .setDescription("서버와 관련된 조작을 할 수 있습니다.")
     .addSubcommand((option) =>
       option
         .setName("init")
-        .setDescription("길드를 초기화합니다.")
+        .setNameLocalization("ko", "초기화")
+        .setDescription("서버를 초기화합니다.")
     )
     .toJSON()
 )
 @InteractionHandler()
-export default class GuildCommand {
+export default class GuildChatInputCommand {
 
   // 길드 초기화 명령어
   @AddExecute("guild/init")

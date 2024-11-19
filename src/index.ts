@@ -5,6 +5,7 @@ import StoreManager from "./util/manange-store";
 import {registReminder} from "./util/reminder";
 import {RESTPostAPIApplicationCommandsJSONBody, Routes} from "discord-api-types/v10";
 import {InteractionCallbackManager} from "./util/interaction-handler";
+import consola from "consola";
 
 require("dotenv").config();
 
@@ -30,7 +31,7 @@ const components: InteractionCallbackManager[] = [];
 
 client.once("ready", async () => {
   if (process.env.NODE_ENV === "production") {
-    console.log("Bot is currently running in production mode");
+    consola.info("Bot is currently running in production mode");
   }
 
   // 현재 플래이 중인 게임을 설정
@@ -89,20 +90,20 @@ client.once("ready", async () => {
 
   new StoreManager("global");
 
-  console.log("Successfully set global store.");
+  consola.info("Successfully set global store.");
 
   if (commandData.length > 0) {
     try {
-      console.log("Started refreshing application (/) commands.");
+      consola.info("Started refreshing application (/) commands.");
 
       await rest.put(
         Routes.applicationCommands(clientId),
         {body: commandData},
       );
 
-      console.log(`Successfully reloaded application ${commandFiles.length} (/) commands.`);
+      consola.info(`Successfully reloaded application ${commandFiles.length} (/) commands.`);
     } catch (error) {
-      console.error(error);
+      consola.error(error);
     }
   }
 
@@ -144,10 +145,10 @@ const eventFiles = readdirSync(join(__dirname, "events")).filter(
 );
 
 for (const file of eventFiles) {
-  console.log(`registering event ${file}`);
+  consola.info(`registering event ${file}`);
   const event = require(`./events/${file}`);
   if (!event) {
-    console.error(`Failed to load event from file: ${file}`);
+    consola.error(`Failed to load event from file: ${file}`);
     continue;
   }
   event.register(client);

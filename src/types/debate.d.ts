@@ -1,6 +1,7 @@
 export interface DebateData {
-  topic: string;
+  roomName: string;
   author: string;
+  topic: string;
   description: string;
   interactionChannelId: string;
   triggerMessageId: string;
