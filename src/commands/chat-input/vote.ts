@@ -1,39 +1,43 @@
 import {
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-  MessageContextMenuCommandInteraction,
-  UserContextMenuCommandInteraction,
-  CacheType,
-  TextChannel,
-  EmbedBuilder,
-  ButtonBuilder,
   ActionRowBuilder,
+  ButtonBuilder,
   ButtonStyle,
-  PermissionsBitField, ChannelType,
+  CacheType,
+  ChannelType,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  PermissionsBitField,
+  SlashCommandBuilder,
+  TextChannel,
 } from "discord.js";
-import StoreManager from "../util/manange-store";
-import { VoteData } from "../types/vote";
-import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-handler";
+import StoreManager from "../../util/manange-store";
+import {VoteData} from "../../types/vote";
+import {AddExecute, CommandData, InteractionHandler} from "../../util/interaction-handler";
+import {Palette} from "../../util/color-palette";
 
 @CommandData(
   new SlashCommandBuilder()
     .setName("vote") // 커맨드 이름 설정
+    .setNameLocalization("ko", "투표")
     .setDescription("투표 관련 조작을 할 수 있습니다.") // 커맨드 설명
     // 투표 시작 커맨드
     .addSubcommand((option) =>
       option
-        .setName("start")
-        .setDescription("새로운 투표를 시작합니다.")
+        .setName("create")
+        .setNameLocalization("ko", "생성")
+        .setDescription("새로운 투표를 생성합니다.")
         .addStringOption((option) =>
           option
-            .setName("title")
-            .setDescription("투표의 제목을 입력합니다.")
+            .setName("topic")
+            .setNameLocalization("ko", "주제")
+            .setDescription("투표의 주제를 입력합니다.")
             .setRequired(true)
         )
         // 투표 설명 옵션
         .addStringOption((option) =>
           option
             .setName("description")
+            .setNameLocalization("ko", "설명")
             .setDescription("투표의 설명을 입력합니다.")
             .setRequired(true)
         )
@@ -41,76 +45,84 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
         .addChannelOption((option) =>
           option
             .setName("channel")
+            .setNameLocalization("ko", "채널")
             .setDescription("투표를 보낼 채널을 선택합니다.")
+            .addChannelTypes(
+              ChannelType.GuildText,
+              ChannelType.GuildVoice,
+              ChannelType.PublicThread,
+              ChannelType.PrivateThread
+            )
             .setRequired(true)
-        )
-        // 투표 항목 개수 옵션 (2-10개)
-        .addIntegerOption((option) =>
-          option
-            .setName("options_count")
-            .setDescription("투표 항목의 개수를 입력합니다 (최대 10개)")
-            .setRequired(true)
-            .setMinValue(2)
-            .setMaxValue(10)
         )
         // 투표 항목 1-10 옵션들
         .addStringOption((option) =>
           option
             .setName("option1")
+            .setNameLocalization("ko", "항목1")
             .setDescription("첫 번째 투표 항목")
             .setRequired(true)
         )
         .addStringOption((option) =>
           option
             .setName("option2")
+            .setNameLocalization("ko", "항목2")
             .setDescription("두 번째 투표 항목")
             .setRequired(true)
         )
         .addStringOption((option) =>
           option
             .setName("option3")
+            .setNameLocalization("ko", "항목3")
             .setDescription("세 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option4")
+            .setNameLocalization("ko", "항목4")
             .setDescription("네 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option5")
+            .setNameLocalization("ko", "항목5")
             .setDescription("다섯 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option6")
+            .setNameLocalization("ko", "항목6")
             .setDescription("여섯 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option7")
+            .setNameLocalization("ko", "항목7")
             .setDescription("일곱 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option8")
+            .setNameLocalization("ko", "항목8")
             .setDescription("여덟 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option9")
+            .setNameLocalization("ko", "항목9")
             .setDescription("아홉 번째 투표 항목")
             .setRequired(false)
         )
         .addStringOption((option) =>
           option
             .setName("option10")
+            .setNameLocalization("ko", "항목10")
             .setDescription("열 번째 투표 항목")
             .setRequired(false)
         )
@@ -119,18 +131,21 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
     .addSubcommand((option) =>
       option
         .setName("close")
+        .setNameLocalization("ko", "종료")
         .setDescription("투표를 종료합니다.")
         .addStringOption(
           (option) =>
             option
-              .setName("vote_id") // 투표 ID 옵션
+              .setName("vote-id") // 투표 ID 옵션
+              .setNameLocalization("ko", "투표-아이디")
               .setDescription("종료할 투표의 아이디를 입력합니다.")
               .setRequired(true) // 필수 옵션
         )
         .addBooleanOption(
           (option) =>
             option
-              .setName("mention_everyone") // @everyone 멘션 옵션
+              .setName("mention-everyone") // @everyone 멘션 옵션
+              .setNameLocalization("ko", "전체-멘션")
               .setDescription("모든 사람에게 투표 결과 공개 알림을 보냅니다.")
               .setRequired(false) // 선택 옵션
         )
@@ -138,18 +153,25 @@ import {AddExecute, CommandData, InteractionHandler} from "../util/interaction-h
           (option) =>
             option
               .setName("channel") // 결과 공개 채널 옵션
+              .setNameLocalization("ko", "채널")
               .setDescription("투표 결과 공개 알림을 보낼 채널을 선택합니다.")
+              .addChannelTypes(
+                ChannelType.GuildText,
+                ChannelType.GuildVoice,
+                ChannelType.PublicThread,
+                ChannelType.PrivateThread
+              )
               .setRequired(false) // 선택 옵션
         )
     )
     .toJSON()
 )
 @InteractionHandler()
-export default class VoteCommand {
+export default class VoteChatInputCommand {
 
   // 투표 시작 커맨드
-  @AddExecute("vote/start")
-  async startVote(interaction: ChatInputCommandInteraction<CacheType>) {
+  @AddExecute("vote/create")
+  async createVote(interaction: ChatInputCommandInteraction<CacheType>) {
     if (
       !interaction.memberPermissions?.has(
         PermissionsBitField.Flags.Administrator
@@ -190,17 +212,11 @@ export default class VoteCommand {
     const embed = new EmbedBuilder()
       .setTitle(title)
       .setDescription(description)
-      .setColor("#eb7723")
+      .setColor(Palette.CHUNG_KANG)
       .setFooter({
         text: `vote id: ${voteId}`,
       })
       .setTimestamp();
-
-    // 투표 항목 개수 가져오기
-    const optionsCount = (
-      interaction as ChatInputCommandInteraction
-    ).options.getInteger("options_count");
-    if (!optionsCount) return;
 
     // 버튼 컴포넌트 생성
     const row = new ActionRowBuilder<ButtonBuilder>();
@@ -213,18 +229,17 @@ export default class VoteCommand {
       closed: false,
     };
 
-    // 투표 항목별 버튼 생성 및 데이터 구조화
-    for (let i = 1; i <= optionsCount; i++) {
-      const buttonLabel = (
-        interaction as ChatInputCommandInteraction
-      ).options.getString(`option${i}`);
-      if (!buttonLabel) return;
+    for (let i = 1; i <= 10; i++) {
+      const option = interaction.options.getString("option" + i);
+      if (!option) {
+        continue;
+      }
       const button = new ButtonBuilder()
-        .setCustomId(`vote_${voteId}_${buttonLabel}`)
-        .setLabel(buttonLabel)
+        .setCustomId(`vote_${voteId}_${option}`)
+        .setLabel(option)
         .setStyle(ButtonStyle.Primary);
       row.addComponents(button);
-      voteData.options[buttonLabel] = { count: 0 };
+      voteData.options[option] = {count: 0};
     }
 
     // 투표 데이터 저장
@@ -262,7 +277,7 @@ export default class VoteCommand {
     }
 
     // 투표 ID 가져오기
-    const voteId = interaction.options.getString("vote_id");
+    const voteId = interaction.options.getString("vote-id");
     if (!voteId) {
       interaction.reply({
         content: "투표 아이디를 입력해주세요.",
@@ -302,7 +317,7 @@ export default class VoteCommand {
     });
 
     // 옵션 값 가져오기
-    const mentionEveryone = interaction.options.getBoolean("mention_everyone");
+    const mentionEveryone = interaction.options.getBoolean("mention-everyone");
     const channel = interaction.options.getChannel("channel");
 
     // 지정된 채널이 있는 경우
@@ -316,7 +331,7 @@ export default class VoteCommand {
 
       // 투표 결과 임베드 생성
       const embed = new EmbedBuilder()
-        .setColor("#eb7723")
+        .setColor(Palette.CHUNG_KANG)
         .setTitle("투표가 종료되었습니다.")
         .setDescription(
           `투표 타이틀:${
@@ -326,7 +341,7 @@ export default class VoteCommand {
             Object.entries(vote.options).reduce(
               (max, [key, value]) =>
                 value.count > max[1].count ? [key, value] : max,
-              ["", { count: -1 }]
+              ["", {count: -1}]
             )[0]
           }**\n\n`
         );
@@ -343,7 +358,7 @@ export default class VoteCommand {
 
       // 투표 결과 임베드 생성
       const embed = new EmbedBuilder()
-        .setColor("#eb7723")
+        .setColor(Palette.CHUNG_KANG)
         .setTitle("투표가 종료되었습니다.")
         .setDescription(
           `투표 타이틀:${
@@ -353,7 +368,7 @@ export default class VoteCommand {
             Object.entries(vote.options).reduce(
               (max, [key, value]) =>
                 value.count > max[1].count ? [key, value] : max,
-              ["", { count: -1 }]
+              ["", {count: -1}]
             )[0]
           }**\n\n`
         );

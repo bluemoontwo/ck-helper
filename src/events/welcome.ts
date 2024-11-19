@@ -1,6 +1,8 @@
 import { Client, EmbedBuilder, GuildMember, TextChannel } from "discord.js";
 import StoreManager from "../util/manange-store";
 import { WelcomeData } from "../types/welcome";
+import {Palette} from "../util/color-palette";
+import consola from "consola";
 
 module.exports = {
   name: "Welcome",
@@ -14,7 +16,7 @@ module.exports = {
       if (!welcomeMessage) return;
 
       if (!systemChannel) {
-        console.error("Could not find system channel.");
+        consola.error("Could not find system channel.");
         return;
       }
 
@@ -27,14 +29,14 @@ module.exports = {
             )
           );
         } catch (error) {
-          console.error(`Error sending message to system channel: ${error}`);
+          consola.error(`Error sending message to system channel: ${error}`);
         }
       }
 
       if (welcomeMessage.toUser) {
         try {
           const embed = new EmbedBuilder()
-            .setColor("#eb7723")
+            .setColor(Palette.CHUNG_KANG)
             .setTitle(
               welcomeMessage.toUser?.title?.replace(
                 "${user}",
@@ -49,10 +51,10 @@ module.exports = {
             );
           await member.send({ embeds: [embed] });
         } catch (error) {
-          console.error(`Error sending message to user: ${error}`);
+          consola.error(`Error sending message to user: ${error}`);
         }
       }
     });
-    console.log(`registered welcome event`);
+    consola.error(`registered welcome event`);
   },
 };

@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import consola from "consola";
 
 /**
  * Class for storing and managing data using JSON files
@@ -39,7 +40,7 @@ export default class StoreManager {
         fs.writeFileSync(this.filePath, "{}", "utf8");
       }
     } catch (error) {
-      console.error(`Error initializing store: ${error}`);
+      consola.error(`Error initializing store: ${error}`);
       throw new Error("Failed to initialize store");
     }
   }
@@ -59,7 +60,7 @@ export default class StoreManager {
         return obj?.[path];
       }, parsedData);
     } catch (error) {
-      console.error(`Error reading from store: ${error}`);
+      consola.error(`Error reading from store: ${error}`);
       return undefined;
     }
   }
@@ -95,7 +96,7 @@ export default class StoreManager {
         "utf8"
       );
     } catch (error) {
-      console.error(`Error writing to store: ${error}`);
+      consola.error(`Error writing to store: ${error}`);
       throw new Error("Failed to save data");
     }
   }
@@ -130,7 +131,7 @@ export default class StoreManager {
         "utf8"
       );
     } catch (error) {
-      console.error(`Error deleting from store: ${error}`);
+      consola.error(`Error deleting from store: ${error}`);
       throw new Error("Failed to delete data");
     }
   }

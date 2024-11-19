@@ -1,11 +1,12 @@
-import {RESTPostAPIApplicationCommandsJSONBody} from "discord-api-types/v10";
-import {Collection, Interaction} from "discord.js";
 import "reflect-metadata";
+import {Collection, Interaction} from "discord.js";
 import {
   InteractionCallbackMethod,
   InteractionCallbackMethodDecorator,
   InteractionCallbackPropertyDescriptor
 } from "../types/discord-interaction";
+import {RESTPostAPIApplicationCommandsJSONBody} from "discord-api-types/v10";
+import consola from "consola";
 
 export class InteractionCallbackManager {
   protected callbackFns: Collection<string, InteractionCallbackMethod<Interaction>>;
@@ -37,7 +38,7 @@ export class InteractionCallbackManager {
   public async call(key: string, interaction: Interaction) {
     const callbackFn = this.callbackFns.get(key);
     if (!callbackFn) {
-      console.error(`${key} callback method not exist`);
+      consola.error(`${key} callback method not exist`);
       return;
     }
     await callbackFn(interaction);

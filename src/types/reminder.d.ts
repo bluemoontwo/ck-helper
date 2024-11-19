@@ -3,7 +3,7 @@ export type ReminderTime = {
 };
 
 export type Reminder = {
-  title: string;
+  name: string;
   description: string;
   authorId: string;
   guildId: string;

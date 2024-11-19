@@ -3,6 +3,7 @@ import { Reminder } from "../types/reminder";
 
 import { ReminderTime } from "../types/reminder";
 import StoreManager from "./manange-store";
+import {Palette} from "./color-palette";
 
 export function registReminder(client: Client) {
   const store = new StoreManager("reminder");
@@ -17,8 +18,8 @@ export function registReminder(client: Client) {
 
       if ("send" in channel) {
         const embed = new EmbedBuilder()
-          .setColor("#eb7723")
-          .setTitle(reminder.title)
+          .setColor(Palette.CHUNG_KANG)
+          .setTitle(reminder.name)
           .setDescription(reminder.description.replace(/\\n/g, "\n"));
 
         const date = new Date();

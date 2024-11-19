@@ -1,8 +1,9 @@
-import {ButtonInteraction, ChannelType, PermissionsBitField,} from "discord.js";
+import {ButtonInteraction, ChannelType, EmbedBuilder, PermissionsBitField,} from "discord.js";
 import StoreManager from "../../util/manange-store";
 import {DebateData} from "../../types/debate";
 import {makeDebateHtml} from "../../util/make-debateHtml";
 import {AddExecute, InteractionHandler} from "../../util/interaction-handler";
+import consola from "consola";
 
 @InteractionHandler()
 export default class DebateButton {
@@ -49,14 +50,18 @@ export default class DebateButton {
       try {
         const attachment = makeDebateHtml(debate, interaction);
 
-        const startMessage = await channel.messages.fetch(
+        const triggerMessage = await channel.messages.fetch(
           debate.triggerMessageId
         );
-        if (startMessage) {
-          await startMessage.edit({
-            content: "회의를 종료하였습니다. 회의 기록은 아래를 참고해 주세요.",
+
+        const embed = new EmbedBuilder(triggerMessage.embeds[0].data)
+          .setTitle("회의가 종료되었습니다.")
+          .setDescription("회의 결과를 다운로드 받아 확인할 수 있습니다.");
+
+        if (triggerMessage) {
+          await triggerMessage.edit({
             files: [attachment],
-            embeds: [],
+            embeds: [embed],
             components: []
           });
         }
@@ -73,10 +78,10 @@ export default class DebateButton {
           store.set(debateId, debate);
         }
       } catch (error) {
-        console.error("회의록 생성 중 오류:", error);
+        consola.error("회의록 생성 중 오류:", error);
       }
     } catch (error) {
-      console.error("예기치 못한 오류:", error);
+      consola.error("예기치 못한 오류:", error);
     }
   }
 
